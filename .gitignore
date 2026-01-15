@@ -1,0 +1,24 @@
+# 학습된 모델 파일 (용량 큼)
+kcelectra_output/
+kcelectra/kcelectra_output/
+kcelectra/test/E1_output/
+kcelectra/test/E2_output/
+kcelectra/test/E3_output/
+kcelectra/test/E4_output/
+kcelectra/test/E5_output/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# 환경
+.env
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp

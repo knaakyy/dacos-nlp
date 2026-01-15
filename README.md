@@ -155,3 +155,4 @@ jupyter notebook kcelectra/KcElectra_비교.ipynb
 ## 👥 팀원
 
 - DACOS 2025 2학기 프로젝트 Team 3
+  권지연, 김나경, 박소영

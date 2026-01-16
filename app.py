@@ -228,7 +228,6 @@ if run:
             st.write(f"- p(abusive): **{p:.4f}**")
             st.write("- 참고: 모델은 오탐/미탐이 있을 수 있습니다.")
 
-result_card(pred)
             
 st.divider()
 st.subheader("🧪 변형 욕설 예시 테스트")

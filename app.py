@@ -98,6 +98,65 @@ def predict_proba_abusive(text: str, tokenizer, model) -> float:
 
     return float(probs[1].item())  # label 1 = abusive 가정
 
+import re
+
+def split_units(text: str):
+    """
+    기본: 공백 기준 단어 + 기호도 토큰으로 분리
+    (너무 잘게 쪼개면 느려져서 단어 단위 추천)
+    """
+    # 단어/한글/영문/숫자/특수문자 덩어리로 토큰화
+    return re.findall(r"[가-힣]+|[A-Za-z0-9]+|[^ \t\n]", text)
+
+def occlusion_importance(text: str, tokenizer, model, max_units: int = 25):
+    """
+    각 토큰(단어/기호)을 하나씩 제거했을 때 악성확률이 얼마나 줄어드는지로 중요도 계산.
+    max_units: 너무 길면 느려지니까 상한.
+    """
+    units = split_units(text)
+    if len(units) > max_units:
+        units = units[:max_units]
+
+    full_p = predict_proba_abusive(text, tokenizer, model)
+    scores = []
+
+    for i in range(len(units)):
+        # i번째 유닛 제거한 텍스트 만들기
+        masked_units = units[:i] + units[i+1:]
+        masked_text = "".join(
+            u if re.match(r"[^ \t\n]", u) and len(u) == 1 and not re.match(r"[가-힣A-Za-z0-9]", u)
+            else (u if i == 0 else " " + u)
+            for i, u in enumerate(masked_units)
+        ).strip()
+
+        # 빈 문자열 방지
+        if not masked_text:
+            masked_p = 0.0
+        else:
+            masked_p = predict_proba_abusive(masked_text, tokenizer, model)
+
+        # 제거했을 때 확률이 얼마나 내려갔는지 = 기여도
+        importance = full_p - masked_p
+        scores.append((units[i], importance))
+
+    # 중요도 큰 순으로 정렬
+    scores.sort(key=lambda x: x[1], reverse=True)
+    return full_p, scores
+
+def highlight_text(text: str, top_tokens):
+    """
+    top_tokens: 강조할 토큰 set
+    """
+    units = split_units(text)
+    out = []
+    for u in units:
+        if u in top_tokens and u.strip():
+            out.append(f"<span style='background:#fff3cd; padding:2px 4px; border-radius:6px; font-weight:700;'>{u}</span>")
+        else:
+            out.append(u)
+    # 토큰 사이 공백을 원문처럼 완벽히 복원하긴 어려워서 단순 join
+    return "".join(out)
+
 # -----------------------------
 # UI 컴포넌트
 # -----------------------------
@@ -233,10 +292,38 @@ if run:
         st.divider()
         prob_gauge(p)
 
+                # 악성 확률 게이지
+        prob_gauge(p)
+
+        # 👇 추가: 어떤 부분이 악성 판단에 기여했는지(근사)
+        st.markdown("### 🧩 의심 구간(설명, 근사)")
+        with st.spinner("설명 계산 중..."):
+            full_p, scores = occlusion_importance(text, tokenizer, model, max_units=25)
+
+        topk = 5
+        top_tokens = {tok for tok, imp in scores[:topk] if imp > 0}
+
+        if not top_tokens:
+            st.info("뚜렷하게 기여한 토큰이 보이지 않습니다(문장 전체 맥락 기반일 수 있어요).")
+        else:
+            st.markdown(
+                highlight_text(text, top_tokens),
+                unsafe_allow_html=True
+            )
+            st.caption("※ 위 강조는 ‘각 토큰을 제거했을 때 악성 확률이 얼마나 떨어지는지’로 추정한 근사 설명입니다.")
+
+        # 중요도 표도 같이
+        st.markdown("**토큰별 기여도(상위)**")
+        for tok, imp in scores[:topk]:
+            st.write(f"- `{tok}` : {imp:+.4f}")
+
+
         with st.expander("🔍 자세히 보기"):
             st.write(f"- 적용 임계값: **{threshold:.2f}**")
             st.write(f"- p(abusive): **{p:.4f}**")
             st.write("- 참고: 모델은 오탐/미탐이 있을 수 있습니다.")
+
+    
 
 # -----------------------------
 # 예시 블록 (항상 표시되게)
@@ -254,3 +341,4 @@ with col2:
     st.markdown("**정상 표현**")
     st.code("ㅋㅋㅋㅋㅋㅋ")
     st.code("@@@")
+

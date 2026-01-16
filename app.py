@@ -169,21 +169,11 @@ except Exception as e:
     st.code(str(e))
     st.stop()
 
-st.subheader("입력")
-examples = [
-    "ㅅㅂ",
-    "시*발 뭐하냐",
-    "진짜 개빡치네",
-    "ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ",
-    "@@@",
-    "좋은 하루 보내세요",
-]
-cols = st.columns(3)
-for i, ex in enumerate(examples):
-    if cols[i % 3].button(ex, use_container_width=True):
-        st.session_state["text"] = ex
-
-text = st.text_area("문장을 입력하세요", key="text", height=120, placeholder="예) ㅆㅣㅂㅏㄹ ㅋㅋ")
+text = st.text_area(
+    "🔎 문장 입력",
+    height=120,
+    placeholder="예) ㅆㅣㅂㅏㄹ ㅋㅋ, ㅅㅂ 뭐함, @@@"
+)
 
 run = st.button("분석하기", type="primary", use_container_width=True)
 
@@ -207,6 +197,22 @@ if run:
             st.write(f"- 임계값: **{threshold:.2f}**")
             st.write(f"- p(abusive): **{p:.4f}**")
             st.write("- 참고: 모델은 오탐/미탐이 있을 수 있습니다.")
+            
+st.divider()
+st.subheader("🧪 변형 욕설 예시 테스트")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("**변형 욕설**")
+    st.code("ㅆㅣㅂㅏㄹ ㅋㅋ")
+    st.code("ㅅㅂ 뭐하냐")
+
+with col2:
+    st.markdown("**정상 표현**")
+    st.code("ㅋㅋㅋㅋㅋㅋ")
+    st.code("@@@")
+
 
 
 

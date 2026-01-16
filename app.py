@@ -185,10 +185,40 @@ if run:
         pred = 1 if p >= threshold else 0
 
         st.subheader("결과")
-        if pred == 1:
-            st.error(f"🚨 {LABEL_MAP[pred]}")
-        else:
-            st.success(f"✅ {LABEL_MAP[pred]}")
+        def result_card(label: int):
+    if label == 1:
+        st.markdown(
+            """
+            <div style="
+                background-color:#fdecea;
+                padding:20px;
+                border-radius:12px;
+                border-left:8px solid #e74c3c;
+                font-size:20px;
+                font-weight:600;
+            ">
+                🚨 판정 결과: <span style="color:#e74c3c;">욕설 (ABUSIVE)</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    else:
+        st.markdown(
+            """
+            <div style="
+                background-color:#eafaf1;
+                padding:20px;
+                border-radius:12px;
+                border-left:8px solid #2ecc71;
+                font-size:20px;
+                font-weight:600;
+            ">
+                ✅ 판정 결과: <span style="color:#2ecc71;">정상 (NON-ABUSIVE)</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
 
         st.metric("악성 확률 p(abusive)", f"{p*100:.1f}%")
         st.progress(min(max(p, 0.0), 1.0))
@@ -197,6 +227,8 @@ if run:
             st.write(f"- 임계값: **{threshold:.2f}**")
             st.write(f"- p(abusive): **{p:.4f}**")
             st.write("- 참고: 모델은 오탐/미탐이 있을 수 있습니다.")
+
+result_card(pred)
             
 st.divider()
 st.subheader("🧪 변형 욕설 예시 테스트")
@@ -212,6 +244,7 @@ with col2:
     st.markdown("**정상 표현**")
     st.code("ㅋㅋㅋㅋㅋㅋ")
     st.code("@@@")
+
 
 
 

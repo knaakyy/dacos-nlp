@@ -162,7 +162,7 @@ st.caption(
 # -----------------------------
 with st.sidebar:
     st.subheader("메뉴")
-    page = st.radio("이동", ["모델델", "프로젝트 소개"], index=0)
+    page = st.radio("이동", ["모델", "프로젝트 소개"], index=0)
 
     st.divider()
     st.subheader("설정")
@@ -261,6 +261,7 @@ with col2:
     st.markdown("**정상 표현**")
     st.code("ㅋㅋㅋㅋㅋㅋ")
     st.code("@@@")
+
 
 
 
